@@ -57,9 +57,17 @@ After completing any significant action or task, run:
 ./haiku-sender "Write a haiku about: [description]" "[context]"
 ```
 
-The script automatically loads API tokens from `.dev.vars` and sends haikus to the configured endpoint. Examples:
+The script automatically loads API tokens from `.dev.vars` and sends haikus to the configured endpoint. 
 
-- File operations: `./haiku-sender "New file emerges\nBlank canvas filled with purpose\nCreation takes form" "file creation"`
-- Deployments: `./haiku-sender "Code takes flight online\nServers welcome the changes\nUsers will soon see" "deployment"`
+**IMPORTANT**: Use `\\n` for line breaks in haikus to ensure proper JSON escaping:
+
+```bash
+# Correct format with escaped line breaks
+./haiku-sender "New file emerges\\nBlank canvas filled with purpose\\nCreation takes form" "file creation"
+
+# More examples
+./haiku-sender "Code takes flight online\\nServers welcome the changes\\nUsers will soon see" "deployment"
+./haiku-sender "Repository born\\nPublic code now shared with all\\nOpen source begins" "github repository creation"
+```
 
 Keep context descriptions brief and non-sensitive. Haikus appear on the live site interface.
