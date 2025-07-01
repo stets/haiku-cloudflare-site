@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+# haiku-sender - Send haikus to the Cloudflare Workers endpoint
+# Usage: haiku-sender "Your haiku text" [action]
+
+CONFIG_FILE="$HOME/.haiku-config"
+
+# Default configuration
+ENDPOINT="${ENDPOINT:-}"
+API_TOKEN="YOUR_SECURE_API_TOKEN"
+
+# Load configuration if it exists
+if [[ -f "$CONFIG_FILE" ]]; then
+    source "$CONFIG_FILE"
+fi
+
+# Also check for .dev.vars in the script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$SCRIPT_DIR/.dev.vars" ]]; then
+    source "$SCRIPT_DIR/.dev.vars"
+fi
+
+# Check if haiku text is provided
+if [[ -z "$1" ]]; then
+    echo "Usage: haiku-sender \"Your haiku text\" [action]"
+    echo ""
+    echo "Examples:"
+    echo "  haiku-sender \"Code flows like water\\nBugs scatter in morning light\\nRefactor brings peace\""
+    echo "  haiku-sender \"Tests all passing now\\nGreen lights illuminate code\\nDeployment awaits\" \"git push to main\""
+    echo ""
+    echo "Configuration file: $CONFIG_FILE"
+    echo "Current endpoint: $ENDPOINT"
+    exit 1
+fi
+
+HAIKU=$(echo "$1" | sed 's/"/\\"/g')
+CONTEXT="${2:-}"
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Create JSON payload
+if [[ -n "$CONTEXT" ]]; then
+    JSON_PAYLOAD=$(cat <<EOF
+{
+  "haiku": "$HAIKU",
+  "context": "$CONTEXT",
+  "timestamp": "$TIMESTAMP"
+}
+EOF
+)
+else
+    JSON_PAYLOAD=$(cat <<EOF
+{
+  "haiku": "$HAIKU",
+  "timestamp": "$TIMESTAMP"
+}
+EOF
+)
+fi
+
+# Send the request
+RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$ENDPOINT" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "$JSON_PAYLOAD")
+
+HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+BODY=$(echo "$RESPONSE" | sed '$d')
+
+if [[ "$HTTP_CODE" == "200" ]]; then
+    echo "✅ Haiku sent successfully!"
+    echo "📝 \"$HAIKU\""
+    [[ -n "$CONTEXT" ]] && echo "📋 Context: $CONTEXT"
+else
+    echo "❌ Failed to send haiku (HTTP $HTTP_CODE)"
+    echo "$BODY"
+    exit 1
+fi

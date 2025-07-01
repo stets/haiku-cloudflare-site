@@ -1,0 +1,20 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+*.log
+dist/
+.wrangler/
+.dev.vars
+
+# MacOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Local config with secrets
+.haiku-config
+wrangler.toml
+analytics.json
