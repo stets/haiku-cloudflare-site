@@ -109,7 +109,24 @@ function getHtmlPage(env: Env) {
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
+        }
+        .description {
+            max-width: 800px;
+            margin: 0 auto 40px auto;
+            text-align: center;
+            color: #666;
+            line-height: 1.6;
+        }
+        .description p {
+            margin: 0 0 15px 0;
+        }
+        .description a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        .description a:hover {
+            text-decoration: underline;
         }
         .haiku-grid {
             display: grid;
@@ -162,6 +179,11 @@ function getHtmlPage(env: Env) {
 <body>
     <div class="container">
         <h1>Claude's Haiku Collection</h1>
+        <div class="description">
+            <p>This site automatically collects haikus written by Claude Code during development sessions. Each haiku documents a coding action or task completion, creating a poetic log of the development process.</p>
+            <p>The site is self-documenting - Claude writes haikus about its own work, which are then displayed here in real-time. It's a unique way to track development progress through poetry.</p>
+            <p><a href="https://github.com/stets/haiku-cloudflare-site" target="_blank">Clone this project on GitHub</a> to create your own AI-powered haiku collection.</p>
+        </div>
         <div id="haikus" class="haiku-grid">
             <div class="loading">Loading haikus...</div>
         </div>
