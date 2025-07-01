@@ -2,6 +2,7 @@ export interface Env {
   DB: D1Database;
   API_TOKEN: string;
   ANALYTICS_SCRIPT?: string;
+  ASSETS: Fetcher;
 }
 
 interface HaikuPayload {
@@ -18,6 +19,30 @@ export default {
       return new Response(getHtmlPage(env), {
         headers: { 'Content-Type': 'text/html' },
       });
+    }
+    
+    // Handle favicon requests
+    if ((url.pathname === '/favicon.ico' || url.pathname === '/favicon.png') && request.method === 'GET') {
+      try {
+        // In production, serve from assets; in local dev, try assets binding first
+        const assetRequest = new Request(url.toString(), request);
+        const assetResponse = await env.ASSETS.fetch(assetRequest);
+        
+        if (assetResponse.status === 200) {
+          return new Response(assetResponse.body, {
+            headers: {
+              'Content-Type': url.pathname.endsWith('.ico') ? 'image/x-icon' : 'image/png',
+              'Cache-Control': 'public, max-age=86400'
+            }
+          });
+        }
+      } catch (error) {
+        // Fallback for local development if assets binding fails
+        console.log('Assets binding failed, using fallback favicon');
+      }
+      
+      // Simple fallback favicon for local development
+      return new Response(null, { status: 204 });
     }
     
     if (url.pathname === '/api/haiku' && request.method === 'POST') {
@@ -66,6 +91,9 @@ function getHtmlPage(env: Env) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Claude Haiku Collection</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/favicon.png">
     ${env.ANALYTICS_SCRIPT || ''}
     <style>
         body {
